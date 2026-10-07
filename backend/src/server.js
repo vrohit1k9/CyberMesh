@@ -68,6 +68,7 @@ const transactionRoutes = require('./routes/transaction.routes');
 const auditRoutes = require('./routes/audit.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 
+// Mount API Routers
 app.use('/api/auth', authRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/cases', caseRoutes);
@@ -77,6 +78,18 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/audit-logs', auditRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+
+// Static frontend serving if built
+const frontendDist = require('path').join(__dirname, '..', '..', 'frontend', 'dist');
+if (require('fs').existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(require('path').join(frontendDist, 'index.html'));
+  });
+}
 
 // 404 Route Handler
 app.use((req, res) => {
