@@ -7,5 +7,7 @@ router.use(authenticateToken);
 
 router.post('/extract', aiController.extractEntities);
 router.post('/classify', aiController.classifyComplaint);
+router.post('/rag-analyze', aiController.ragAnalyze);
+router.post('/correlate', aiController.correlateAndSolve);
 
 module.exports = router;

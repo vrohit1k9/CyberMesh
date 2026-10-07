@@ -48,17 +48,40 @@ def test_anomaly_detection():
     assert "TX4" in res['flagged_ids'], "Should flag extreme outlier"
     print("PASS: Anomaly detection tests passed!")
 
+from app.services.rag_engine import get_rag_engine
+
+def test_rag_engine():
+    rag = get_rag_engine()
+    
+    # 1. Test QR Code Scam Query
+    qr_query = "Victim scanned a QR code sent on WhatsApp to receive money on OLX and entered upi pin"
+    qr_results = rag.retrieve(qr_query, top_k=2)
+    print(f"[Test RAG] QR Query top match: {qr_results[0]['doc_id']} - {qr_results[0]['title']} ({qr_results[0]['relevance_percentage']})")
+    assert len(qr_results) > 0, "Should retrieve matches for QR code scam"
+    assert qr_results[0]["category"] == "UPI_QR_CODE_SCAM", "Should match UPI_QR_CODE_SCAM"
+    assert len(qr_results[0]["statutory_sops"]) > 0, "Should provide statutory SOPs"
+
+    # 2. Test Collect Request Scam Query
+    collect_query = "Victim received a PhonePe collect request asking to approve refund for electricity bill"
+    collect_results = rag.retrieve(collect_query, top_k=2)
+    print(f"[Test RAG] Collect Query top match: {collect_results[0]['doc_id']} - {collect_results[0]['title']} ({collect_results[0]['relevance_percentage']})")
+    assert len(collect_results) > 0, "Should retrieve matches for collect request scam"
+    assert collect_results[0]["category"] == "UPI_COLLECT_REQUEST_SCAM", "Should match UPI_COLLECT_REQUEST_SCAM"
+
+    print("PASS: RAG Engine tests passed!")
+
 def test_summarizer():
     req = SummarizeRequest(
         case_id="CASE-2026-001",
-        category="INVESTMENT_SCAM",
-        complaint_title="Telegram Task Scam",
-        complaint_description="Victim lured into task investment.",
+        category="UPI_FRAUD",
+        complaint_title="OLX QR Code Reverse Payment Trap",
+        complaint_description="Buyer sent PhonePe QR code to scan for receiving used car payment, resulting in unauthorized debit.",
         risk_score=92,
         risk_level="CRITICAL",
         connected_complaints=["CMP-2026-0001", "CMP-2026-0002", "CMP-2026-0003"],
         connected_identifiers=[
             {"type": "BANK_ACCOUNT", "value": "987654321012@HDFC0001234"},
+            {"type": "UPI", "value": "fastrefund@okaxis"},
             {"type": "PHONE", "value": "+919876543210"}
         ],
         total_financial_loss=290000.0
@@ -66,13 +89,16 @@ def test_summarizer():
     summary = generate_investigation_summary(req)
     print("[Test Summary] Generated summary:\n", summary["narrative_summary"])
     assert "CASE-2026-001" in summary["narrative_summary"]
-    assert len(summary["suspicious_patterns"]) > 0
-    assert len(summary["investigative_recommendations"]) > 0
-    print("PASS: AI Summarizer tests passed!")
+    assert "upi_modus_operandi" in summary, "RAG should attach matched UPI Modus Operandi"
+    assert summary["upi_modus_operandi"]["category"] == "UPI_QR_CODE_SCAM", "Should match QR code scam"
+    assert len(summary["statutory_sops"]) > 0, "Should include statutory directions"
+    assert len(summary["evidence_checklist"]) > 0, "Should include evidence checklist"
+    print("PASS: AI Summarizer with RAG tests passed!")
 
 if __name__ == '__main__':
     test_entity_extraction()
     test_classifier()
     test_anomaly_detection()
+    test_rag_engine()
     test_summarizer()
     print("\nALL AI SERVICE TESTS PASSED SUCCESSFULLY!")

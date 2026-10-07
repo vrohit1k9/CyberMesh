@@ -7,6 +7,7 @@ PHONE_REGEX = re.compile(r'(?:(?:\+91|91|0)[\s\-]?)?([6-9]\d{9})\b')
 UPI_REGEX = re.compile(r'\b([a-zA-Z0-9.\-_]{2,64}@(?:okaxis|okhdfcbank|oksbi|okicici|paytm|ybl|axl|sbi|apl|upi|ibl|icici|barodampay|federal|kotak|postbank|[a-zA-Z]{2,30}))\b', re.IGNORECASE)
 IFSC_REGEX = re.compile(r'\b([A-Z]{4}0[A-Z0-9]{6})\b')
 BANK_ACC_REGEX = re.compile(r'(?:a\/c|ac|acc|account|acct|beneficiary)?[\s:#\-_]*\b(\d{9,18})\b', re.IGNORECASE)
+EMAIL_REGEX = re.compile(r'\b([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)\b', re.IGNORECASE)
 DOMAIN_REGEX = re.compile(r'(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9][a-zA-Z0-9\-]{1,61}[a-zA-Z0-9]\.(?:com|org|net|xyz|top|in|co\.in|online|site|shop|vip|live|club|app|info|biz|tk|ml|link|cc|co))\b', re.IGNORECASE)
 
 KNOWN_IFSC_BANKS = {
@@ -68,6 +69,19 @@ def extract_entities_from_text(text: str) -> List[EntityItem]:
                 confidence=0.98,
                 role="BENEFICIARY",
                 meta={"handle": handle}
+            ))
+
+    # 3. Email Identifiers
+    for match in EMAIL_REGEX.finditer(text):
+        raw_email = match.group(1).lower()
+        if raw_email not in seen_entities:
+            seen_entities.add(raw_email)
+            results.append(EntityItem(
+                type="EMAIL",
+                value=raw_email,
+                confidence=0.98,
+                role="COMMUNICATION_CHANNEL",
+                meta={"domain": raw_email.split('@')[1]}
             ))
 
     # 3. Bank Account & IFSC

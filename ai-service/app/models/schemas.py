@@ -61,3 +61,21 @@ class SummarizeResponse(BaseModel):
     narrative_summary: str
     suspicious_patterns: List[str]
     investigative_recommendations: List[str]
+    upi_modus_operandi: Optional[Dict[str, Any]] = None
+    retrieved_knowledge: Optional[List[Dict[str, Any]]] = None
+    statutory_sops: Optional[List[str]] = None
+    evidence_checklist: Optional[List[str]] = None
+    regulatory_citations: Optional[List[str]] = None
+
+class RagAnalyzeRequest(BaseModel):
+    text: str = Field(..., min_length=3, description="Complaint or investigation text to analyze via RAG")
+    top_k: int = Field(default=2, ge=1, le=5)
+
+class RagAnalyzeResponse(BaseModel):
+    success: bool = True
+    query: str
+    matched_modus_operandi: Optional[Dict[str, Any]] = None
+    retrieved_knowledge: List[Dict[str, Any]] = []
+    recommended_sops: List[str] = []
+    evidence_checklist: List[str] = []
+    regulatory_citations: List[str] = []

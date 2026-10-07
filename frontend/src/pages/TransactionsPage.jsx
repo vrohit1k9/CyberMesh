@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeftRight, Search, AlertTriangle, Filter, CheckCircle2 } from 'lucide-react';
+import { ArrowLeftRight, Search, AlertTriangle, Filter, CheckCircle2, Activity, RefreshCw } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function TransactionsPage() {
@@ -9,6 +9,8 @@ export default function TransactionsPage() {
   const [channel, setChannel] = useState('');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [scanning, setScanning] = useState(false);
+  const [scanResult, setScanResult] = useState(null);
 
   const loadTransactions = async (page = 1) => {
     setLoading(true);
@@ -32,6 +34,22 @@ export default function TransactionsPage() {
     }
   };
 
+  const handleRunAnomalyScan = async () => {
+    setScanning(true);
+    setScanResult(null);
+    try {
+      const res = await api.runAnomalyDetection();
+      if (res.success) {
+        setScanResult(res.data);
+        await loadTransactions(1);
+      }
+    } catch (err) {
+      console.error('Anomaly detection failed:', err);
+    } finally {
+      setScanning(false);
+    }
+  };
+
   useEffect(() => {
     loadTransactions(1);
   }, [anomalyOnly, channel]);
@@ -39,15 +57,58 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold font-mono tracking-wide text-white flex items-center gap-2.5">
-          <ArrowLeftRight className="w-6 h-6 text-cyan-400" />
-          FINANCIAL TRANSACTION SURVEILLANCE
-        </h1>
-        <p className="text-xs text-slate-400 font-mono mt-1">
-          Tracking money movements, payment channels, and statistical velocity anomalies ({pagination.total} records)
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold font-mono tracking-wide text-white flex items-center gap-2.5">
+            <ArrowLeftRight className="w-6 h-6 text-cyan-400" />
+            FINANCIAL TRANSACTION SURVEILLANCE
+          </h1>
+          <p className="text-xs text-slate-400 font-mono mt-1">
+            Tracking money movements, payment channels, and statistical velocity anomalies ({pagination.total} records)
+          </p>
+        </div>
+
+        <button
+          type="button"
+          disabled={scanning}
+          onClick={handleRunAnomalyScan}
+          className="px-4 py-2.5 bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white rounded-lg text-xs font-mono font-bold flex items-center gap-2 transition-all shadow-lg shadow-rose-950/40 disabled:opacity-50"
+        >
+          {scanning ? (
+            <>
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              <span>RUNNING STATISTICAL SCAN...</span>
+            </>
+          ) : (
+            <>
+              <Activity className="w-3.5 h-3.5 text-amber-200" />
+              <span>RUN STATISTICAL ANOMALY SCAN</span>
+            </>
+          )}
+        </button>
       </div>
+
+      {/* Anomaly Scan Result Alert */}
+      {scanResult && (
+        <div className="cyber-glass-card p-4 rounded-xl border border-amber-500/30 bg-amber-950/20 flex items-start gap-3">
+          <Activity className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex-1 font-mono text-xs">
+            <div className="text-amber-200 font-bold mb-1">
+              Statistical Anomaly Scan Complete ({scanResult.engine})
+            </div>
+            <p className="text-slate-300">
+              Evaluated <span className="font-bold text-white">{scanResult.totalAnalyzed}</span> financial transactions using amount Z-Score deviation, receiver velocity surges, and high-ticket thresholds.
+              Flagged <span className="font-bold text-rose-400">{scanResult.flaggedCount}</span> anomalous transactions.
+            </p>
+          </div>
+          <button
+            onClick={() => setScanResult(null)}
+            className="text-slate-400 hover:text-white text-xs font-mono px-2 py-1"
+          >
+            DISMISS
+          </button>
+        </div>
+      )}
 
       {/* Filter and Search Bar */}
       <div className="cyber-glass-card p-4 rounded-xl border border-[#1f293d] flex flex-wrap items-center justify-between gap-4">

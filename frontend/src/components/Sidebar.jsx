@@ -37,8 +37,8 @@ export default function Sidebar() {
           <div className="font-extrabold text-lg tracking-wider text-white font-mono flex items-center gap-1.5">
             CYBER<span className="text-cyan-400">MESH</span>
           </div>
-          <div className="text-[10px] text-slate-400 tracking-widest font-mono uppercase">
-            Fraud Syndicate Radar
+          <div className="text-[10px] text-cyan-400 font-mono tracking-wider font-semibold uppercase">
+            UPI Scam & Ring Radar
           </div>
         </div>
       </div>

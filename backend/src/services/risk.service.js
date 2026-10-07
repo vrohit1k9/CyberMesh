@@ -12,7 +12,7 @@ async function calculateCaseRiskScore(caseId) {
     SELECT fc.case_id, fc.case_title, fc.primary_complaint_id, c.reported_amount, c.category
     FROM fraud_cases fc
     JOIN complaints c ON fc.primary_complaint_id = c.complaint_id
-    WHERE fc.case_id = $1
+    WHERE fc.case_id = $1 OR fc.primary_complaint_id = $1
   `, [caseId]);
 
   if (caseRes.rows.length === 0) {
@@ -20,6 +20,7 @@ async function calculateCaseRiskScore(caseId) {
   }
 
   const caseObj = caseRes.rows[0];
+  const actualCaseId = caseObj.case_id;
   const rootComplaintId = caseObj.primary_complaint_id;
 
   // 2. Perform graph traversal to understand syndicate depth and breadth
@@ -159,7 +160,7 @@ async function calculateCaseRiskScore(caseId) {
   `;
 
   const upsertRes = await query(upsertSql, [
-    caseId,
+    actualCaseId,
     finalScore,
     riskLevel,
     reuseScore,

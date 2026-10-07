@@ -12,10 +12,10 @@ INSERT INTO roles (role_id, role_name, description) VALUES
 
 -- 2. SEED USERS (Password: CyberMesh2026!)
 INSERT INTO users (user_id, username, password_hash, role_id, email, full_name, badge_number) VALUES
-(1, 'admin', '$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6x8ek5YXY9DAbW.jZ35G', 1, 'admin@cybermesh.gov.in', 'Vikramaditya Sharma', 'CYBER-DIR-01'),
-(2, 'investigator_raj', '$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6x8ek5YXY9DAbW.jZ35G', 2, 'rajesh.kumar@cybermesh.gov.in', 'Rajesh Kumar', 'CYBER-INV-104'),
-(3, 'investigator_anita', '$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6x8ek5YXY9DAbW.jZ35G', 2, 'anita.deshmukh@cybermesh.gov.in', 'Anita Deshmukh', 'CYBER-INV-109'),
-(4, 'analyst_priya', '$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6x8ek5YXY9DAbW.jZ35G', 3, 'priya.nair@cybermesh.gov.in', 'Priya Nair', 'CYBER-ANL-205');
+(1, 'admin', '$2a$10$MM/t9T.KGfEhs8suORdFbeDvD0vvyqJl3ZuWoNCvXEtWkFXrz9A2y', 1, 'admin@cybermesh.gov.in', 'Vikramaditya Sharma', 'CYBER-DIR-01'),
+(2, 'investigator_raj', '$2a$10$MM/t9T.KGfEhs8suORdFbeDvD0vvyqJl3ZuWoNCvXEtWkFXrz9A2y', 2, 'rajesh.kumar@cybermesh.gov.in', 'Rajesh Kumar', 'CYBER-INV-104'),
+(3, 'investigator_anita', '$2a$10$MM/t9T.KGfEhs8suORdFbeDvD0vvyqJl3ZuWoNCvXEtWkFXrz9A2y', 2, 'anita.deshmukh@cybermesh.gov.in', 'Anita Deshmukh', 'CYBER-INV-109'),
+(4, 'analyst_priya', '$2a$10$MM/t9T.KGfEhs8suORdFbeDvD0vvyqJl3ZuWoNCvXEtWkFXrz9A2y', 3, 'priya.nair@cybermesh.gov.in', 'Priya Nair', 'CYBER-ANL-205');
 
 -- Set serial sequences
 SELECT setval('roles_role_id_seq', 3);

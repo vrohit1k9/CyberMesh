@@ -68,10 +68,13 @@ export const api = {
   // AI Service Gateway
   extractEntities: (text) => apiFetch('/ai/extract', { method: 'POST', body: { text } }),
   classifyText: (title, description) => apiFetch('/ai/classify', { method: 'POST', body: { title, description } }),
+  ragAnalyze: (text, topK = 2) => apiFetch('/ai/rag-analyze', { method: 'POST', body: { text, topK } }),
+  correlate: (data) => apiFetch('/ai/correlate', { method: 'POST', body: data }),
 
   // Transactions
   getTransactions: (params = '') => apiFetch(`/transactions${params ? `?${params}` : ''}`),
   getTransactionById: (id) => apiFetch(`/transactions/${id}`),
+  runAnomalyDetection: () => apiFetch('/transactions/run-anomaly-detection', { method: 'POST' }),
 
   // Audit Logs
   getAuditLogs: (params = '') => apiFetch(`/audit-logs${params ? `?${params}` : ''}`)

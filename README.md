@@ -4,13 +4,15 @@
 ---
 
 ## 1. Project Overview
-**CyberMesh** is a full-stack cybercrime investigation prototype engineered to uncover hidden structural links between ostensibly independent citizen complaints. Rather than treating complaint files as isolated records, CyberMesh applies **database graph traversal (PostgreSQL Recursive CTEs)**, **AI-powered deterministic entity extraction**, **transparent 4-factor risk scoring**, and **interactive network visualization** to automatically expose organized cyber fraud syndicates.
+**CyberMesh** is a specialized cybercrime investigation platform focused on **UPI (Unified Payments Interface) Cyber-Financial Fraud and Syndicate Ring Tracking**. Rather than treating complaint files as isolated records, CyberMesh applies **database graph traversal (PostgreSQL Recursive CTEs)**, **Retrieval-Augmented Generation (RAG) over authoritative NPCI/RBI fraud corpora**, **AI-powered deterministic entity extraction**, **transparent 4-factor risk scoring**, and **interactive network visualization** to automatically expose organized cyber fraud syndicates.
 
 ### Core Capabilities
+- **Specialized UPI Fraud Focus:** Tailored for UPI Modus Operandi (QR Code Reverse Payment Scams, Inbound Collect Request Traps, Remote Desktop APK PIN Snooping, Telegram VIP Task Mules, Search Engine Poisoned Helplines, and SIM Swap Re-binding).
+- **Retrieval-Augmented Generation (RAG):** AI engine indexes authoritative NPCI procedural guidelines, RBI customer liability circulars, and Section 91 CrPC freeze protocols; retrieves exact Modus Operandi matches and synthesizes cited statutory SOPs.
 - **Relational 3NF Database:** 12 normalized relations with foreign keys, checks, and composite indexes.
 - **Recursive CTE Graph Traversal:** Discovers connected complaints up to $N$ hops via shared Bank Accounts, UPI handles, Phone numbers, and Phishing Domains.
 - **Explainable 4-Factor Risk Engine:** Transparent 0–100 risk score breakdown (Identifier reuse, Anomaly velocity, Network density, Financial exposure).
-- **AI Microservice:** Fast, deterministic regex extraction, Scikit-learn TF-IDF complaint classifier, statistical Z-score transaction anomaly detector, and fact-grounded natural language investigation briefs.
+- **AI Microservice:** Fast, deterministic regex extraction, Scikit-learn TF-IDF complaint classifier, statistical Z-score transaction anomaly detector, and RAG-grounded natural language investigation briefs.
 - **Dark Cyber UI:** React 18, Vite, Tailwind CSS, Cytoscape.js interactive network graph, and Recharts telemetry.
 - **Security & Forensic Integrity:** Bcrypt password hashing, JWT RBAC (`ADMIN`, `INVESTIGATOR`, `ANALYST`), rate limiting, and immutable audit logs.
 

@@ -17,9 +17,11 @@ async function initDatabase() {
   // Try standard PostgreSQL pool first if configured
   if (dbUrl && !process.env.FORCE_EMBEDDED_DB) {
     try {
+      const isRemote = !dbUrl.includes('localhost') && !dbUrl.includes('127.0.0.1');
       const testPool = new Pool({
         connectionString: dbUrl,
-        connectionTimeoutMillis: 2500,
+        connectionTimeoutMillis: 5000,
+        ssl: isRemote ? { rejectUnauthorized: false } : false
       });
 
       // Quick probe
@@ -44,10 +46,39 @@ async function initDatabase() {
       fs.mkdirSync(dataDir, { recursive: true });
     }
 
-    pgliteInstance = new PGlite(dataDir);
-    await pgliteInstance.waitReady;
-    activeEngine = 'PGLITE_EMBEDDED';
-    console.log(`[CyberMesh DB] Embedded PostgreSQL engine (PGlite) initialized successfully at: ${dataDir}`);
+    try {
+      pgliteInstance = new PGlite(dataDir);
+      await pgliteInstance.waitReady;
+      activeEngine = 'PGLITE_EMBEDDED';
+      console.log(`[CyberMesh DB] Embedded PostgreSQL engine (PGlite) initialized successfully at: ${dataDir}`);
+    } catch (startupErr) {
+      console.warn(`[CyberMesh DB] PGlite directory was in a dirty state (${startupErr.message}). Auto-recovering clean state...`);
+      try {
+        if (pgliteInstance) {
+          try { await pgliteInstance.close(); } catch (_) {}
+          pgliteInstance = null;
+        }
+        fs.rmSync(dataDir, { recursive: true, force: true });
+        fs.mkdirSync(dataDir, { recursive: true });
+
+        pgliteInstance = new PGlite(dataDir);
+        await pgliteInstance.waitReady;
+        activeEngine = 'PGLITE_EMBEDDED';
+
+        const baseDbDir = path.join(__dirname, '..', '..', '..', 'database');
+        if (fs.existsSync(path.join(baseDbDir, 'schema.sql'))) {
+          console.log(`[CyberMesh DB] Auto-seeding database schema and sample datasets...`);
+          await pgliteInstance.exec(fs.readFileSync(path.join(baseDbDir, 'schema.sql'), 'utf8'));
+          await pgliteInstance.exec(fs.readFileSync(path.join(baseDbDir, 'indexes.sql'), 'utf8'));
+          await pgliteInstance.exec(fs.readFileSync(path.join(baseDbDir, 'procedures.sql'), 'utf8'));
+          await pgliteInstance.exec(fs.readFileSync(path.join(baseDbDir, 'sample_data.sql'), 'utf8'));
+          console.log(`[CyberMesh DB] Clean database re-seeded successfully!`);
+        }
+      } catch (recoveryErr) {
+        console.error(`[CyberMesh DB] Auto-recovery failed:`, recoveryErr);
+        throw recoveryErr;
+      }
+    }
   } catch (embeddedErr) {
     console.error(`[CyberMesh DB] Fatal: Failed to initialize embedded database:`, embeddedErr);
     throw embeddedErr;

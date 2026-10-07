@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 // Fixed Bcrypt hash for passwords (cost 10)
-// $2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6x8ek5YXY9DAbW.jZ35G corresponds to "CyberMesh2026!"
-const BCRYPT_HASH = '$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6x8ek5YXY9DAbW.jZ35G';
+// corresponds to "CyberMesh2026!"
+const BCRYPT_HASH = '$2a$10$MM/t9T.KGfEhs8suORdFbeDvD0vvyqJl3ZuWoNCvXEtWkFXrz9A2y';
 
 let sql = `-- ============================================================================
 -- CYBERMESH: SYNTHETIC SEED DATA

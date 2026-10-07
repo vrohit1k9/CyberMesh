@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Network, AlertCircle, Share2, DollarSign, ArrowUpRight, ShieldAlert } from 'lucide-react';
+import NetworkGraphPage from './NetworkGraphPage';
 import { api } from '../services/api';
 
 export default function NetworksOverviewPage() {
@@ -12,11 +12,11 @@ export default function NetworksOverviewPage() {
     async function loadRings() {
       try {
         const res = await api.getGlobalNetworks();
-        if (res.success) {
+        if (res.success && res.data?.rings) {
           setRings(res.data.rings);
         }
       } catch (err) {
-        console.error('Failed to load global fraud rings:', err);
+        // silent fallback
       } finally {
         setLoading(false);
       }
@@ -25,95 +25,96 @@ export default function NetworksOverviewPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold font-mono tracking-wide text-white flex items-center gap-2.5">
-          <Network className="w-6 h-6 text-cyan-400" />
-          DISCOVERED FRAUD SYNDICATE CLUSTERS
-        </h1>
-        <p className="text-xs text-slate-400 font-mono mt-1">
-          Automated multi-incident graph correlation across shared beneficiary bank accounts, phone numbers, and domains
-        </p>
-      </div>
+    <div className="flex flex-col gap-6 w-full text-on-surface">
+      {/* Embedded Tactical Graph Deck (Page 2) */}
+      <NetworkGraphPage />
 
-      {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="flex items-center gap-2 text-xs font-mono text-cyan-400">
-            <div className="w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
-            <span>Executing global connected-component graph analysis...</span>
+      {/* Discovered Syndicate Cluster Dossiers */}
+      <div className="px-margin-mobile flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary-container text-[20px]">hub</span>
+            <span className="font-headline-sm text-headline-sm text-primary uppercase font-mono tracking-wider font-bold">
+              DISCOVERED SYNDICATE CLUSTERS (RECURSIVE CTE)
+            </span>
           </div>
+          <span className="font-label-sm text-label-sm text-on-surface-variant font-mono">
+            {rings.length} DETECTED
+          </span>
         </div>
-      ) : rings.length === 0 ? (
-        <div className="cyber-glass-card p-12 text-center text-slate-500 font-mono text-xs rounded-xl">
-          No multi-complaint fraud rings detected in current database.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {rings.map((ring, idx) => {
-            const isAlpha = ring.complaintCount >= 4;
-            return (
-              <div 
-                key={ring.networkId}
-                className="cyber-glass-card p-6 rounded-xl border border-[#1f293d] hover:border-cyan-500/50 transition-all flex flex-col justify-between space-y-5"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-bold text-cyan-400 font-mono text-sm">
+
+        {loading ? (
+          <div className="flex items-center justify-center h-32 bg-surface-container-low rounded p-4 border border-outline-variant/30">
+            <span className="font-mono text-xs text-primary-container animate-pulse">
+              ANALYZING CYCLIC CTE GRAPH EDGES...
+            </span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {rings.map((ring) => {
+              const isAlpha = ring.complaintCount >= 4;
+              return (
+                <div
+                  key={ring.networkId}
+                  className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 hover:border-primary-container/40 transition-all flex flex-col justify-between gap-3 shadow-md"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-primary-container font-mono text-sm">
                       {ring.networkId}
                     </span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
-                      isAlpha 
-                        ? 'bg-rose-950/60 text-rose-400 border border-rose-800/60'
-                        : 'bg-amber-950/60 text-amber-400 border border-amber-800/60'
-                    }`}>
-                      {isAlpha ? 'CRITICAL SYNDICATE' : 'HIGH PRIORITY RING'}
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                        isAlpha
+                          ? 'bg-secondary-container/20 text-secondary border border-secondary-container/40'
+                          : 'bg-tertiary-container/20 text-tertiary-fixed-dim border border-tertiary-container/40'
+                      }`}
+                    >
+                      {isAlpha ? 'CRITICAL RING' : 'MULE LAYER'}
                     </span>
                   </div>
 
-                  <div className="text-xs font-mono text-slate-400 mb-1">Anchor Hub Identifier:</div>
-                  <div className="text-xs font-bold font-mono text-slate-100 bg-[#0a0f1d] p-2 rounded border border-[#1f293d] truncate mb-4">
-                    {ring.anchorIdentifier}
-                  </div>
-
-                  {/* Ring Metrics */}
-                  <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                    <div className="bg-[#0a0f1d] p-3 rounded-lg border border-[#1f293d]">
-                      <div className="text-[10px] text-slate-500 uppercase">Complaints</div>
-                      <div className="text-cyan-400 font-bold text-lg mt-0.5">{ring.complaintCount}</div>
-                    </div>
-
-                    <div className="bg-[#0a0f1d] p-3 rounded-lg border border-[#1f293d]">
-                      <div className="text-[10px] text-slate-500 uppercase">Identifiers</div>
-                      <div className="text-purple-400 font-bold text-lg mt-0.5">{ring.identifierCount}</div>
+                  <div className="font-mono text-xs">
+                    <div className="text-[10px] text-outline uppercase">ANCHOR HUB IDENTIFIER:</div>
+                    <div className="text-primary-fixed bg-surface-container-lowest p-1.5 rounded truncate font-bold mt-1 border border-outline-variant/20">
+                      {ring.anchorIdentifier}
                     </div>
                   </div>
 
-                  <div className="mt-3 bg-[#0a0f1d] p-3 rounded-lg border border-[#1f293d] text-xs font-mono">
-                    <div className="text-[10px] text-slate-500 uppercase">Total Ring Financial Loss</div>
-                    <div className="text-emerald-400 font-bold text-base mt-0.5">
+                  <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                    <div className="bg-surface-container-lowest p-2 rounded border border-outline-variant/20">
+                      <div className="text-[10px] text-outline uppercase">Complaints</div>
+                      <div className="text-primary-container font-bold text-sm mt-0.5">
+                        {ring.complaintCount}
+                      </div>
+                    </div>
+                    <div className="bg-surface-container-lowest p-2 rounded border border-outline-variant/20">
+                      <div className="text-[10px] text-outline uppercase">Identifiers</div>
+                      <div className="text-secondary font-bold text-sm mt-0.5">
+                        {ring.identifierCount}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-outline-variant/20">
+                    <span className="text-[11px] font-mono font-bold text-tertiary-fixed-dim">
                       ₹{ring.totalExposedAmount.toLocaleString('en-IN')}
-                    </div>
+                    </span>
+                    <button
+                      onClick={() =>
+                        navigate(`/cases/CASE-${ring.seedComplaintId?.replace('CMP-', '')}/network`)
+                      }
+                      className="px-2.5 py-1 bg-primary-container text-on-primary-fixed font-bold font-mono text-[11px] rounded hover:opacity-90 transition-opacity flex items-center gap-1"
+                    >
+                      <span>FOCUS TOPOLOGY</span>
+                      <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                    </button>
                   </div>
                 </div>
-
-                <div className="pt-4 border-t border-[#1f293d] flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-slate-500">
-                    Seed: {ring.seedComplaintId}
-                  </span>
-                  <button
-                    onClick={() => navigate(`/cases/CASE-${ring.seedComplaintId.replace('CMP-', '')}/network`)}
-                    className="px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold font-mono text-xs rounded-lg transition-all shadow-cyber-cyan flex items-center gap-1.5"
-                  >
-                    <span>View Graph Topology</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -113,7 +113,7 @@ test('7. Transparent 4-Factor Risk Score Calculation', async () => {
 });
 
 test('8. AI Entity Extraction Gateway', async () => {
-  const sampleComplaint = "Scammer asked victim to transfer Rs. 35,000 to demo123@upi and caller used phone 919876543210 on portal verify-secure.xyz";
+  const sampleComplaint = "Scammer asked victim to transfer Rs. 35,000 to demo123@upi and caller used phone 919876543210 on portal verify-secure.xyz with contact support@cyber-investigate.in";
   const { status, data } = await apiRequest('/api/ai/extract', {
     method: 'POST',
     body: { text: sampleComplaint }
@@ -126,9 +126,10 @@ test('8. AI Entity Extraction Gateway', async () => {
   assert.ok(types.includes('UPI'), 'Should extract UPI');
   assert.ok(types.includes('PHONE'), 'Should extract PHONE');
   assert.ok(types.includes('DOMAIN'), 'Should extract DOMAIN');
+  assert.ok(types.includes('EMAIL'), 'Should extract EMAIL');
 });
 
-test('9. AI Case Investigation Summary Generation', async () => {
+test('9. AI Case Investigation Summary Generation (RAG Augmented)', async () => {
   const { status, data } = await apiRequest('/api/cases/CASE-2026-001/ai-summary', {
     method: 'POST'
   });
@@ -138,6 +139,9 @@ test('9. AI Case Investigation Summary Generation', async () => {
   assert.ok(data.data.summary.includes('CASE-2026-001'));
   assert.ok(data.data.patterns.length > 0);
   assert.ok(data.data.recommendations.length > 0);
+  assert.ok(data.data.upiModusOperandi, 'RAG should provide matched UPI Modus Operandi');
+  assert.ok(data.data.statutorySops.length > 0, 'RAG should provide statutory SOPs');
+  assert.ok(data.data.evidenceChecklist.length > 0, 'RAG should provide evidence checklist');
 });
 
 test('10. Audit Logging Ledger Integrity', async () => {
@@ -148,3 +152,53 @@ test('10. Audit Logging Ledger Integrity', async () => {
   const actions = data.data.logs.map(l => l.action);
   assert.ok(actions.includes('LOGIN') || actions.includes('GENERATE_AI_SUMMARY'));
 });
+
+test('11. Statistical Transaction Anomaly Batch Scan (/api/transactions/run-anomaly-detection)', async () => {
+  const { status, data } = await apiRequest('/api/transactions/run-anomaly-detection', {
+    method: 'POST'
+  });
+
+  assert.strictEqual(status, 200);
+  assert.strictEqual(data.success, true);
+  assert.ok(data.data.totalAnalyzed > 0, 'Should analyze transactions');
+  assert.ok(data.data.flaggedCount > 0, 'Should detect statistical outliers/velocity surges');
+  assert.ok(Array.isArray(data.data.flaggedIds), 'Should return list of flagged IDs');
+});
+
+test('12. Recursive CTE Cycle Termination Safety (Cyclic Syndicate Alpha)', async () => {
+  // Syndicate Alpha forms a closed cycle:
+  // CMP-2026-0001 -> Bank001 -> CMP-2026-0002 -> Phone002 -> CMP-2026-0003 -> Domain001 -> CMP-2026-0004 -> Bank001
+  // Querying with high depth (depth = 6) must terminate safely without infinite recursion
+  const startTime = Date.now();
+  const { status, data } = await apiRequest('/api/cases/CASE-2026-001/network?depth=6');
+  const durationMs = Date.now() - startTime;
+
+  assert.strictEqual(status, 200);
+  assert.strictEqual(data.success, true);
+  assert.ok(durationMs < 3000, `Recursive traversal should complete quickly without hanging (took ${durationMs}ms)`);
+
+  const complaintNodes = data.data.nodes.filter(n => n.type === 'COMPLAINT');
+  // Visited paths must be deduplicated in nodes
+  const complaintIds = complaintNodes.map(n => n.data.complaintId);
+  const uniqueComplaints = new Set(complaintIds);
+  assert.strictEqual(complaintIds.length, uniqueComplaints.size, 'Nodes returned must not contain duplicate cycle entries');
+  assert.ok(uniqueComplaints.has('CMP-2026-0001'));
+  assert.ok(uniqueComplaints.has('CMP-2026-0004'));
+});
+
+test('13. UPI Scam RAG Knowledge Retrieval (/api/ai/rag-analyze)', async () => {
+  const qrComplaint = "Buyer on OLX sent a QR code on WhatsApp asking to scan and enter UPI PIN to receive money for used furniture";
+  const { status, data } = await apiRequest('/api/ai/rag-analyze', {
+    method: 'POST',
+    body: { text: qrComplaint, topK: 2 }
+  });
+
+  assert.strictEqual(status, 200);
+  assert.strictEqual(data.success, true);
+  assert.ok(data.data.matched_modus_operandi, 'Should match UPI Modus Operandi');
+  assert.strictEqual(data.data.matched_modus_operandi.category, 'UPI_QR_CODE_SCAM');
+  assert.ok(data.data.recommended_sops.length > 0, 'Should return statutory SOPs');
+  assert.ok(data.data.evidence_checklist.length > 0, 'Should return evidence checklist');
+});
+
+

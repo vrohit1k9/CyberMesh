@@ -87,7 +87,7 @@ async function getCaseById(req, res) {
       JOIN complaints c ON fc.primary_complaint_id = c.complaint_id
       LEFT JOIN users u ON fc.assigned_investigator_id = u.user_id
       LEFT JOIN risk_scores rs ON fc.case_id = rs.case_id
-      WHERE fc.case_id = $1;
+      WHERE fc.case_id = $1 OR fc.primary_complaint_id = $1;
     `;
 
     const result = await query(sql, [id]);

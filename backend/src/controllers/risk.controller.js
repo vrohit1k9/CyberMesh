@@ -10,7 +10,9 @@ async function getCaseRisk(req, res) {
     const { id } = req.params;
 
     const riskRes = await query(`
-      SELECT * FROM risk_scores WHERE case_id = $1;
+      SELECT rs.* FROM risk_scores rs
+      JOIN fraud_cases fc ON rs.case_id = fc.case_id
+      WHERE rs.case_id = $1 OR fc.primary_complaint_id = $1;
     `, [id]);
 
     if (riskRes.rows.length === 0) {

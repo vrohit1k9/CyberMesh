@@ -10,16 +10,30 @@ async function getCaseNetwork(req, res) {
     const { id } = req.params;
     const depth = Math.min(5, Math.max(1, parseInt(req.query.depth || '3', 10)));
 
-    // Find primary complaint for this case
-    const caseRes = await query('SELECT primary_complaint_id FROM fraud_cases WHERE case_id = $1', [id]);
-    if (caseRes.rows.length === 0) {
+    // Find primary complaint for this case or complaint
+    let complaintId = null;
+    let actualCaseId = id;
+    const caseRes = await query(
+      'SELECT case_id, primary_complaint_id FROM fraud_cases WHERE case_id = $1 OR primary_complaint_id = $1',
+      [id]
+    );
+    if (caseRes.rows.length > 0) {
+      complaintId = caseRes.rows[0].primary_complaint_id;
+      actualCaseId = caseRes.rows[0].case_id;
+    } else {
+      const cmpRes = await query('SELECT complaint_id FROM complaints WHERE complaint_id = $1', [id]);
+      if (cmpRes.rows.length > 0) {
+        complaintId = cmpRes.rows[0].complaint_id;
+      }
+    }
+
+    if (!complaintId) {
       return res.status(404).json({
         success: false,
-        error: { code: 'CASE_NOT_FOUND', message: `Case ${id} not found` }
+        error: { code: 'CASE_NOT_FOUND', message: `Case or complaint ${id} not found` }
       });
     }
 
-    const complaintId = caseRes.rows[0].primary_complaint_id;
     const graphData = await traverseNetwork(complaintId, depth);
 
     // Audit log traversal action

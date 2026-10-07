@@ -67,7 +67,7 @@ BEGIN
         -- Path A: When current node is an IDENTIFIER, branch to other Complaints that link to it
         LEFT JOIN complaint_identifiers ci 
             ON ng.target_type = 'IDENTIFIER' 
-            AND ng.target_id::INTEGER = ci.identifier_id
+            AND ci.identifier_id::VARCHAR = ng.target_id
         -- Path B: When current node is a COMPLAINT, branch to other Identifiers linked to that Complaint
         LEFT JOIN complaint_identifiers ci2 
             ON ng.target_type = 'COMPLAINT' 
