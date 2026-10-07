@@ -92,11 +92,13 @@ export default function CaseSubGraph({ graphData, caseId }) {
       const cy = cytoscape({
         container: containerRef.current,
         elements,
+        userZoomingEnabled: false,
+        zoomingEnabled: true,
+        panningEnabled: true,
+        boxSelectionEnabled: false,
         layout: {
           name: 'cola',
-          animate: true,
-          refresh: 1,
-          maxSimulationTime: 1200,
+          animate: false,
           nodeSpacing: 45,
           edgeLength: 100,
           randomize: false

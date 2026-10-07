@@ -172,9 +172,13 @@ export default function ComplaintNewPage() {
       const cy = cytoscape({
         container: globalGraphContainerRef.current,
         elements,
+        userZoomingEnabled: false,
+        zoomingEnabled: true,
+        panningEnabled: true,
+        boxSelectionEnabled: false,
         layout: {
           name: 'cola',
-          animate: true,
+          animate: false,
           nodeSpacing: 45,
           edgeLength: 100
         },
@@ -299,7 +303,7 @@ export default function ComplaintNewPage() {
   const rag = correlationData?.ragAnalysis;
 
   return (
-    <div className="flex flex-col gap-6 w-full px-margin-mobile text-on-surface select-none pb-12">
+    <div className="flex flex-col gap-6 w-full px-margin-mobile text-on-surface pb-12">
       {/* Header */}
       <div>
         <h1 className="text-xl md:text-2xl font-bold font-mono tracking-wide text-primary flex items-center gap-2">

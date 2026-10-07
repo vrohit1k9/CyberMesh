@@ -102,7 +102,7 @@ export default function DashboardPage() {
     : '₹4.82Cr';
 
   return (
-    <div className="flex flex-col w-full px-margin-mobile gap-space-md select-none relative">
+    <div className="flex flex-col w-full px-margin-mobile gap-space-md relative">
       {/* Dynamic Micro HUD / Telemetry String */}
       <div className="w-full bg-surface-container-lowest p-space-xs rounded flex items-center justify-between shadow-sm border border-outline-variant/20">
         <div className="flex items-center gap-1.5 min-w-0">

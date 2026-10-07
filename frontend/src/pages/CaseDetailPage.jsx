@@ -80,7 +80,7 @@ export default function CaseDetailPage() {
     : '₹18.40 LAKHS';
 
   return (
-    <div className="flex flex-col w-full text-on-surface select-none">
+    <div className="flex flex-col w-full text-on-surface">
       {/* Case Context Tactical Strip */}
       <div className="px-margin-mobile py-space-sm bg-surface-container-lowest border-b border-outline-variant/30">
         <div className="flex items-center justify-between gap-space-xs mb-space-xs">

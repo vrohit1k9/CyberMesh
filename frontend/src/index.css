@@ -7,17 +7,26 @@
 }
 
 @layer base {
-  html, body {
-    width: 100vw;
+  html {
+    width: 100%;
+    min-height: 100%;
     margin: 0;
     padding: 0;
     background-color: #10131c;
     color: #e0e2ee;
     font-family: 'Inter', sans-serif;
     overflow-x: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
   }
   body {
-    overscroll-behavior: none;
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #10131c;
+    color: #e0e2ee;
+    font-family: 'Inter', sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
   .pb-safe {

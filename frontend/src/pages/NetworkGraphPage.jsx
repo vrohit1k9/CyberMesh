@@ -210,7 +210,7 @@ export default function NetworkGraphPage() {
     const layoutConfig = {
       FORCE: {
         name: 'cola',
-        animate: true,
+        animate: false,
         randomize: false,
         maxSimulationTime: 2000,
         nodeSpacing: 55,
@@ -220,13 +220,13 @@ export default function NetworkGraphPage() {
         name: 'concentric',
         concentric: (node) => (node.data('isRoot') ? 10 : 2),
         levelWidth: () => 1,
-        animate: true,
+        animate: false,
       },
       BIPARTITE: {
         name: 'breadthfirst',
         directed: true,
         spacingFactor: 1.25,
-        animate: true,
+        animate: false,
       },
     };
 
@@ -234,6 +234,10 @@ export default function NetworkGraphPage() {
       const cy = cytoscape({
         container: containerRef.current,
         elements,
+        userZoomingEnabled: false,
+        zoomingEnabled: true,
+        panningEnabled: true,
+        boxSelectionEnabled: false,
         layout: layoutConfig[activeLayout] || layoutConfig.FORCE,
         style: [
           {
@@ -385,7 +389,7 @@ export default function NetworkGraphPage() {
     : '₹38.45L';
 
   return (
-    <div className="flex flex-col w-full relative select-none overflow-hidden text-on-surface">
+    <div className="flex flex-col w-full relative text-on-surface">
       {/* Interactive Tactical Cytoscape Simulation Deck */}
       <div className="relative w-full h-[580px] bg-surface-container-lowest overflow-hidden flex flex-col justify-between border-b border-outline-variant/30">
         {/* Central Radar Crosshairs Background Layer */}

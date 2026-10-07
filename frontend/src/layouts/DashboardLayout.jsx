@@ -11,7 +11,7 @@ export default function DashboardLayout() {
       <Navbar />
 
       {/* Main Content Viewport */}
-      <main className="flex-1 w-full pt-28 pb-24 max-w-7xl mx-auto flex flex-col min-h-screen">
+      <main className="flex-1 w-full pt-28 pb-24 max-w-7xl mx-auto flex flex-col">
         <Outlet />
       </main>
 
