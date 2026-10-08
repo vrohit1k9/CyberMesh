@@ -1,8 +1,6 @@
 const { query } = require('../config/db');
 const { logAuditEvent } = require('../services/audit.service');
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-
 /**
  * List transactions with filtering by anomaly flag, complaint, channel, etc.
  */
@@ -168,42 +166,13 @@ async function runBatchAnomalyDetection(req, res) {
     }
 
     let flaggedList = [];
-    let engine = 'STATISTICAL_LOCAL_ENGINE';
+    const engine = 'STATISTICAL_LOCAL_ENGINE';
 
-    // Attempt AI Microservice
-    try {
-      const payload = {
-        transactions: transactions.map(t => ({
-          transaction_id: t.transaction_id,
-          amount: parseFloat(t.amount) || 0,
-          timestamp: new Date(t.transaction_timestamp).toISOString(),
-          receiver_id: t.receiver_value || 'UNKNOWN',
-          sender_id: t.sender_value || 'CITIZEN',
-          payment_channel: t.payment_channel || 'UPI'
-        }))
-      };
-
-      const response = await fetch(`${AI_SERVICE_URL}/api/detect-anomalies`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        const json = await response.json();
-        flaggedList = json.analysis ? json.analysis.filter(a => a.is_anomalous) : [];
-        engine = 'AI_MICROSERVICE_SCIPY_NUMPY';
-      }
-    } catch (e) {
-      // AI Service offline -> local statistical fallback
-    }
-
-    // Fallback if AI service didn't return
-    if (engine === 'STATISTICAL_LOCAL_ENGINE') {
-      const amounts = transactions.map(t => parseFloat(t.amount) || 0);
-      const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
-      const variance = amounts.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (amounts.length || 1);
-      const stdDev = Math.sqrt(variance);
+    // Direct local statistical calculation
+    const amounts = transactions.map(t => parseFloat(t.amount) || 0);
+    const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+    const variance = amounts.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (amounts.length || 1);
+    const stdDev = Math.sqrt(variance);
 
       // Frequency by receiver
       const receiverCounts = {};
@@ -248,7 +217,6 @@ async function runBatchAnomalyDetection(req, res) {
           });
         }
       });
-    }
 
     // Persist updates to DB
     for (const item of flaggedList) {

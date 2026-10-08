@@ -43,12 +43,12 @@ export default function CasesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold font-mono tracking-wide text-primary flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary-container text-[24px]">description</span>
-            ACTIVE INVESTIGATION DOSSIERS
+          <h1 className="text-xl md:text-2xl font-bold font-mono tracking-wide text-cyan-400 flex items-center gap-2">
+            <span className="material-symbols-outlined text-cyan-400 text-[24px]">folder</span>
+            Fraud Investigation Cases
           </h1>
-          <p className="text-xs text-on-surface-variant font-mono mt-1">
-            Correlated syndicate cases with automated RAG domain intelligence &amp; Section 91 CrPC freeze pipelines
+          <p className="text-xs text-slate-400 font-mono mt-1">
+            Grouped investigation files formed by complaints sharing common bank accounts, phone numbers, and UPI IDs
           </p>
         </div>
       </div>

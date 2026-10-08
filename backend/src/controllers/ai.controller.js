@@ -3,8 +3,6 @@ const { traverseNetwork } = require('../services/network.service');
 const { logAuditEvent } = require('../services/audit.service');
 const { retrieveUpiKnowledge, synthesizeCaseRagSolution } = require('../services/rag.service');
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-
 /**
  * Native deterministic fallback for entity extraction if AI microservice is not responding
  */
@@ -103,7 +101,7 @@ function localDeterministicExtract(text) {
 }
 
 /**
- * Proxy / Fallback Entity Extraction
+ * Native Node.js Entity Extraction (Deterministic Regex for Phone, UPI, Bank, Domain, Email)
  */
 async function extractEntities(req, res) {
   try {
@@ -115,29 +113,14 @@ async function extractEntities(req, res) {
       });
     }
 
-    try {
-      const response = await fetch(`${AI_SERVICE_URL}/api/extract`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
-      });
-
-      if (response.ok) {
-        const json = await response.json();
-        return res.json({ success: true, data: json });
-      }
-    } catch (netErr) {
-      // AI Service offline -> fallback seamlessly to local extractor
-    }
-
-    const fallbackEntities = localDeterministicExtract(text);
+    const entities = localDeterministicExtract(text);
     return res.json({
       success: true,
       data: {
         success: true,
-        entities: fallbackEntities,
-        entity_count: fallbackEntities.length,
-        engine: 'LOCAL_DETERMINISTIC_FALLBACK'
+        entities,
+        entity_count: entities.length,
+        engine: 'NODEJS_DETERMINISTIC_ENGINE'
       }
     });
   } catch (error) {
@@ -149,7 +132,7 @@ async function extractEntities(req, res) {
 }
 
 /**
- * Proxy / Fallback Classification
+ * Native Node.js Complaint Classification (Keyword and Modus Operandi Matching)
  */
 async function classifyComplaint(req, res) {
   try {
@@ -161,22 +144,6 @@ async function classifyComplaint(req, res) {
       });
     }
 
-    try {
-      const response = await fetch(`${AI_SERVICE_URL}/api/classify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description })
-      });
-
-      if (response.ok) {
-        const json = await response.json();
-        return res.json({ success: true, data: json });
-      }
-    } catch (netErr) {
-      // AI Service offline fallback
-    }
-
-    // Heuristic rule-based fallback
     const t = `${title} ${description}`.toLowerCase();
     let cat = 'OTHER';
     if (t.includes('upi') || t.includes('qr') || t.includes('gpay') || t.includes('phonepe') || t.includes('paytm')) cat = 'UPI_FRAUD';
@@ -190,8 +157,8 @@ async function classifyComplaint(req, res) {
       success: true,
       data: {
         category: cat,
-        confidence: 0.85,
-        engine: 'HEURISTIC_RULE_FALLBACK'
+        confidence: 0.90,
+        engine: 'NODEJS_RULE_CLASSIFIER'
       }
     });
   } catch (error) {
@@ -251,26 +218,10 @@ async function generateCaseAiSummary(req, res) {
       total_financial_loss: graph.metrics.totalExposedAmount
     };
 
-    let summaryResult = null;
-
-    try {
-      const response = await fetch(`${AI_SERVICE_URL}/api/summarize-case`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(summaryPayload)
-      });
-      if (response.ok) {
-        summaryResult = await response.json();
-      }
-    } catch (e) {
-      // Fallback
-    }
-
-    if (!summaryResult) {
-      // Local RAG-augmented synthesis
-      const queryText = `${caseData.comp_title} ${caseData.comp_desc} ${caseData.category}`;
-      const retrieved = retrieveUpiKnowledge(queryText, 2);
-      const topMatch = retrieved[0] || null;
+    // Direct local synthesis from database & graph evidence
+    const queryText = `${caseData.comp_title} ${caseData.comp_desc} ${caseData.category}`;
+    const retrieved = retrieveUpiKnowledge(queryText, 2);
+    const topMatch = retrieved[0] || null;
 
       const upiModusOperandi = topMatch ? {
         name: topMatch.title,
@@ -306,21 +257,20 @@ async function generateCaseAiSummary(req, res) {
         `Beneficiary infrastructure exhibits a risk score of ${caseData.risk_score || 50}/100 with an assessed severity level of ${caseData.risk_level || 'MEDIUM'}. ` +
         `Aggregate financial exposure is evaluated at Rs. ${graph.metrics.totalExposedAmount.toLocaleString('en-IN')}.`;
 
-      summaryResult = {
-        narrative_summary: narrative,
-        upi_modus_operandi: upiModusOperandi,
-        retrieved_knowledge: retrieved,
-        statutory_sops: statutorySops,
-        evidence_checklist: evidenceChecklist,
-        regulatory_citations: regulatoryCitations,
-        suspicious_patterns: [
-          `Matched UPI Modus Operandi: ${upiModusOperandi.name}`,
-          `Identified ${connectedIdentifiers.length} recurring cyber/financial entities`,
-          `Combined exposed financial loss evaluated at Rs. ${graph.metrics.totalExposedAmount.toLocaleString('en-IN')}`
-        ],
-        investigative_recommendations: statutorySops
-      };
-    }
+    const summaryResult = {
+      narrative_summary: narrative,
+      upi_modus_operandi: upiModusOperandi,
+      retrieved_knowledge: retrieved,
+      statutory_sops: statutorySops,
+      evidence_checklist: evidenceChecklist,
+      regulatory_citations: regulatoryCitations,
+      suspicious_patterns: [
+        `Matched UPI Modus Operandi: ${upiModusOperandi.name}`,
+        `Identified ${connectedIdentifiers.length} recurring cyber/financial entities`,
+        `Combined exposed financial loss evaluated at Rs. ${graph.metrics.totalExposedAmount.toLocaleString('en-IN')}`
+      ],
+      investigative_recommendations: statutorySops
+    };
 
     // Persist summary in fraud_cases table
     await query(`
@@ -379,20 +329,6 @@ async function ragAnalyze(req, res) {
         success: false,
         error: { code: 'INVALID_INPUT', message: 'Text is required for RAG analysis' }
       });
-    }
-
-    try {
-      const response = await fetch(`${AI_SERVICE_URL}/api/rag-analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, top_k: parseInt(topK, 10) })
-      });
-      if (response.ok) {
-        const json = await response.json();
-        return res.json({ success: true, data: json });
-      }
-    } catch (e) {
-      // AI Service offline fallback
     }
 
     const retrieved = retrieveUpiKnowledge(text, parseInt(topK, 10));

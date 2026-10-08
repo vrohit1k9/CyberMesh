@@ -669,33 +669,33 @@ export default function NetworkGraphPage() {
                 </div>
               </div>
 
-              {/* Statutory Action Command Triggers */}
+              {/* Node Actions */}
               <div className="flex flex-col gap-2 pt-1 font-mono">
                 <button
-                  onClick={triggerCrpcNotice}
-                  className="w-full min-h-[44px] px-3 py-2.5 rounded bg-secondary-container hover:bg-on-secondary active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-on-secondary-container shadow-md font-bold"
+                  onClick={() => copyToClipboard(activeNode.id)}
+                  className="w-full min-h-[40px] px-3 py-2 rounded bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold transition-all flex items-center justify-center gap-2 shadow-md text-xs"
                 >
-                  <span className="material-symbols-outlined text-[18px]">gavel</span>
-                  <span className="font-headline-sm text-headline-sm uppercase tracking-wide">
-                    EXPORT SECTION 91 CRPC FREEZE NOTICE
+                  <span className="material-symbols-outlined text-[16px]">content_copy</span>
+                  <span className="uppercase tracking-wide">
+                    COPY IDENTIFIER VALUE
                   </span>
                 </button>
 
                 <div className="grid grid-cols-2 gap-2">
                   <button
-                    onClick={triggerBlacklist}
-                    className="min-h-[40px] px-2 py-2 rounded bg-surface-container-high hover:bg-surface-bright active:scale-[0.99] transition-all flex items-center justify-center gap-1.5 text-primary font-bold"
+                    onClick={isolateSubtree}
+                    className="min-h-[38px] px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
                   >
-                    <span className="material-symbols-outlined text-[16px]">block</span>
-                    <span className="font-label-md text-label-md uppercase">ADD CFCFRMS</span>
+                    <span className="material-symbols-outlined text-[16px]">filter_center_focus</span>
+                    <span className="uppercase">ISOLATE LINKS</span>
                   </button>
 
                   <button
-                    onClick={isolateSubtree}
-                    className="min-h-[40px] px-2 py-2 rounded bg-surface-container-high hover:bg-surface-bright active:scale-[0.99] transition-all flex items-center justify-center gap-1.5 text-on-surface font-bold"
+                    onClick={handleFitScreen}
+                    className="min-h-[38px] px-2 py-1.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
                   >
-                    <span className="material-symbols-outlined text-[16px]">filter_center_focus</span>
-                    <span className="font-label-md text-label-md uppercase">ISOLATE RING</span>
+                    <span className="material-symbols-outlined text-[16px]">fit_screen</span>
+                    <span className="uppercase">RESET VIEW</span>
                   </button>
                 </div>
               </div>

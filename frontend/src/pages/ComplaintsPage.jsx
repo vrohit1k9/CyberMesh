@@ -63,7 +63,7 @@ export default function ComplaintsPage() {
           className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-semibold text-xs rounded-lg font-mono transition-all shadow-cyber-cyan flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          <span>New Complaint (AI Extractor)</span>
+          <span>Register New Complaint</span>
         </button>
       </div>
 
