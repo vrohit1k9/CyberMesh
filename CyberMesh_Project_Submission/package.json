@@ -1,0 +1,12 @@
+{
+  "name": "cybermesh",
+  "version": "1.0.0",
+  "description": "CyberMesh - Fraud Complaint & Fraud-Ring Tracker",
+  "scripts": {
+    "build": "npm --prefix frontend install && npm --prefix frontend run build && npm --prefix backend install",
+    "start": "node backend/src/server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
