@@ -4,6 +4,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const fs = require('fs');
+const path = require('path');
 const { initDatabase, getActiveEngine } = require('./config/db');
 
 const app = express();
@@ -80,14 +82,31 @@ app.use('/api/audit-logs', auditRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 // Static frontend serving if built
-const frontendDist = require('path').join(__dirname, '..', '..', 'frontend', 'dist');
-if (require('fs').existsSync(frontendDist)) {
+const candidateDistPaths = [
+  path.join(__dirname, '..', '..', 'frontend', 'dist'),
+  path.join(__dirname, '..', 'frontend', 'dist'),
+  path.join(process.cwd(), 'frontend', 'dist'),
+  path.join(process.cwd(), '..', 'frontend', 'dist')
+];
+const frontendDist = candidateDistPaths.find(p => fs.existsSync(p));
+
+if (frontendDist) {
+  console.log(`[CyberMesh Server] Serving static frontend from: ${frontendDist}`);
   app.use(express.static(frontendDist));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) {
       return next();
     }
-    res.sendFile(require('path').join(frontendDist, 'index.html'));
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+} else {
+  console.warn('[CyberMesh Server] Warning: Frontend build dist not found. Static frontend serving disabled.');
+  app.get('/', (req, res) => {
+    res.json({
+      success: true,
+      message: 'CyberMesh API Gateway is running. Frontend build not detected in dist directory.',
+      apiDocumentation: '/api/health'
+    });
   });
 }
 
@@ -118,21 +137,23 @@ app.use((err, req, res, next) => {
 });
 
 // Server Initialization
-let server = null;
+let server;
 async function startServer() {
-  await initDatabase();
-  server = app.listen(PORT, () => {
-    console.log(`[CyberMesh Server] API Gateway online on port ${PORT}`);
-    console.log(`[CyberMesh Server] Database Engine: ${getActiveEngine()}`);
-  });
-  return server;
+  try {
+    await initDatabase();
+    server = app.listen(PORT, () => {
+      console.log(`[CyberMesh Server] API Gateway online on port ${PORT}`);
+      console.log(`[CyberMesh Server] Database Engine: ${getActiveEngine()}`);
+    });
+    return server;
+  } catch (error) {
+    console.error('Failed to initialize server or database:', error);
+    process.exit(1);
+  }
 }
 
 if (process.env.NODE_ENV !== 'test' && !process.env.TEST_MODE) {
-  startServer().catch(err => {
-    console.error('Failed to start CyberMesh server:', err);
-    process.exit(1);
-  });
+  startServer();
 }
 
 module.exports = { app, startServer };

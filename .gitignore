@@ -2,10 +2,6 @@
 node_modules/
 **/node_modules/
 
-# Production build
-dist/
-**/dist/
-
 # Embedded database storage & cache
 backend/data/pglite/
 **/data/pglite/
@@ -26,4 +22,3 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
-

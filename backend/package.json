@@ -4,6 +4,7 @@
   "description": "CyberMesh API Gateway and Investigation Intelligence Engine",
   "main": "src/server.js",
   "scripts": {
+    "build": "npm --prefix ../frontend install && npm --prefix ../frontend run build",
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "test": "node --test tests/**/*.test.js",
